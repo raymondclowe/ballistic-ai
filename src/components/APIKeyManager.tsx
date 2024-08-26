@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface APIKey {
   type: string;
@@ -55,12 +55,19 @@ const APIKeyPopup: React.FC<APIKeyPopupProps> = ({ isOpen, onClose, onAddKey }) 
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 dark:text-darkText">Use OpenRouter:</label>
-            <input
-              type="checkbox"
-              checked={useOpenRouter}
-              onChange={(e) => setUseOpenRouter(e.target.checked)}
-            />
+            <label className="block mb-2 dark:text-darkText flex items-center">
+              <input
+                type="checkbox"
+                checked={useOpenRouter}
+                onChange={(e) => setUseOpenRouter(e.target.checked)}
+                className="mr-2"
+              />
+              Use OpenRouter
+              <InformationCircleIcon
+                className="ml-1 h-5 w-5 text-gray-500 cursor-help"
+                title="When checked this model is accessed via the openrouter server, provide an openrouter key here"
+              />
+            </label>
           </div>
           <div className="flex justify-end space-x-2">
             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 dark:bg-gray-600 dark:text-darkText dark:hover:bg-gray-500">
