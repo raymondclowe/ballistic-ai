@@ -5,6 +5,7 @@ import { getProjectFilesDir } from './directoryUtils';
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 async function fileToBase64(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
@@ -54,13 +55,13 @@ async function logAPIRequest(projectDir: string, apiType: string, requestBody: a
   */
 }
 
-export async function fetchAPIResponse(apiKey: { type: string; key: string }, systemPrompt: string, messages: Message[], projectDir: string) {
+export async function fetchAPIResponse(apiKey: { type: string; key: string }, systemPrompt: string, messages: Message[], projectDir: string, useOpenRouter: string) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   let body: any;
 
   const filteredMessages = await filterMessages(messages);
 
-  if (apiKey.type === 'Claude') {
+  if (apiKey.type === 'Claude' && useOpenRouter !== 'true') {
     headers['x-api-key'] = apiKey.key;
     headers['anthropic-version'] = '2023-06-01';
     headers["anthropic-beta"] = "max-tokens-3-5-sonnet-2024-07-15";
@@ -87,7 +88,7 @@ export async function fetchAPIResponse(apiKey: { type: string; key: string }, sy
       stream: true
     };
 
-  } else if (apiKey.type === 'OpenAI') {
+  } else if (apiKey.type === 'OpenAI' || useOpenRouter === 'true') {
     headers['Authorization'] = `Bearer ${apiKey.key}`;
 
     const lastMessage = filteredMessages[filteredMessages.length - 1];
@@ -116,7 +117,7 @@ export async function fetchAPIResponse(apiKey: { type: string; key: string }, sy
 
   await logAPIRequest(projectDir, apiKey.type, body);
 
-  const response = await fetch(apiKey.type === 'Claude' ? CLAUDE_API_URL : OPENAI_API_URL, {
+  const response = await fetch((apiKey.type === 'Claude' && useOpenRouter !== 'true') ? CLAUDE_API_URL : (useOpenRouter === 'true' ? OPENROUTER_API_URL : OPENAI_API_URL), {
     method: 'POST',
     headers,
     body: JSON.stringify(body)
@@ -209,9 +210,9 @@ export async function guessModifiedFiles(apiKey: { type: string; key: string }, 
   for (const filePath of filePaths) {
     try {
       const fileContent = await fs.readFile(filePath, 'utf8');
-      projectContent += `File: ${filePath}\n${'='.repeat(filePath.length + 6)}\n${fileContent}\n\n`;
+      projectContent += `File: $src/utils/apiResponseHandler.ts\n${'='.repeat(filePath.length + 6)}\n${fileContent}\n\n`;
     } catch (error) {
-      projectContent += `File: ${filePath}\nError: Unable to read file content\n\n`;
+      projectContent += `File: $src/utils/apiResponseHandler.ts\nError: Unable to read file content\n\n`;
     }
   }
 

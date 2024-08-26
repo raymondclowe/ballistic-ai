@@ -64,8 +64,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const selectedAPIKeyType = sessionStorage.getItem('selectedAPIKeyType');
     console.log('handleImageUpload: Selected API Key Type:', selectedAPIKeyType);
 
-    if (selectedAPIKeyType !== 'Claude') {
-      alert('Only Claude API supports image attachments.');
+    const useOpenRouter = sessionStorage.getItem('useOpenRouter') === 'true';
+    console.log('handleImageUpload: Use OpenRouter:', useOpenRouter);
+
+    if (selectedAPIKeyType !== 'Claude' || useOpenRouter) {
+      alert('Image attachments are only supported for Claude API without OpenRouter.');
       return;
     }
 
