@@ -6,23 +6,24 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 interface APIKey {
   type: string;
   key: string;
+  useOpenRouter: boolean;
 }
-
 interface APIKeyPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddKey: (type: string, key: string) => void;
+  onAddKey: (type: string, key: string, useOpenRouter: boolean) => void;
 }
 
 const APIKeyPopup: React.FC<APIKeyPopupProps> = ({ isOpen, onClose, onAddKey }) => {
   const [newKeyType, setNewKeyType] = useState('Claude');
   const [newKey, setNewKey] = useState('');
+  const [useOpenRouter, setUseOpenRouter] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddKey(newKeyType, newKey);
+    onAddKey(newKeyType, newKey, useOpenRouter);
     setNewKey('');
     onClose();
   };
@@ -51,6 +52,14 @@ const APIKeyPopup: React.FC<APIKeyPopupProps> = ({ isOpen, onClose, onAddKey }) 
               onChange={(e) => setNewKey(e.target.value)}
               className="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:text-darkText dark:border-gray-600"
               placeholder="Enter new API key"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 dark:text-darkText">Use OpenRouter:</label>
+            <input
+              type="checkbox"
+              checked={useOpenRouter}
+              onChange={(e) => setUseOpenRouter(e.target.checked)}
             />
           </div>
           <div className="flex justify-end space-x-2">
@@ -90,27 +99,30 @@ const APIKeyManager: React.FC = () => {
         if (index >= 0 && index < data.keys.length) {
           setSelectedIndex(index);
           sessionStorage.setItem('selectedAPIKeyType', data.keys[index].type);
+          sessionStorage.setItem('useOpenRouter', data.keys[index].useOpenRouter ? 'true' : 'false');
         } else {
           sessionStorage.removeItem('selectedAPIKeyIndex');
           sessionStorage.removeItem('selectedAPIKeyType');
+          sessionStorage.removeItem('useOpenRouter');
         }
       } else if (data.selected !== null) {
         setSelectedIndex(data.selected);
         sessionStorage.setItem('selectedAPIKeyIndex', data.selected.toString());
         sessionStorage.setItem('selectedAPIKeyType', data.keys[data.selected].type);
+        sessionStorage.setItem('useOpenRouter', data.keys[data.selected].useOpenRouter ? 'true' : 'false');
       }
     } catch (error) {
       console.error('Error fetching API keys:', error);
     }
   };
 
-  const addKey = async (newKeyType: string, newKey: string) => {
+  const addKey = async (newKeyType: string, newKey: string, useOpenRouter: boolean) => {
     if (newKey.trim()) {
       try {
         const response = await fetch('/api/api-keys', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: newKeyType, key: newKey }),
+          body: JSON.stringify({ type: newKeyType, key: newKey, useOpenRouter }),
         });
         if (!response.ok) throw new Error('Failed to add API key');
         await fetchAPIKeys();
@@ -139,9 +151,11 @@ const APIKeyManager: React.FC = () => {
         if (newSelectedIndex !== null) {
           sessionStorage.setItem('selectedAPIKeyIndex', newSelectedIndex.toString());
           sessionStorage.setItem('selectedAPIKeyType', apiKeys[newSelectedIndex].type);
+          sessionStorage.setItem('useOpenRouter', apiKeys[newSelectedIndex].useOpenRouter ? 'true' : 'false');
         } else {
           sessionStorage.removeItem('selectedAPIKeyIndex');
           sessionStorage.removeItem('selectedAPIKeyType');
+          sessionStorage.removeItem('useOpenRouter');
         }
       }
     } catch (error) {
@@ -160,6 +174,7 @@ const APIKeyManager: React.FC = () => {
       setSelectedIndex(index);
       sessionStorage.setItem('selectedAPIKeyIndex', index.toString());
       sessionStorage.setItem('selectedAPIKeyType', apiKeys[index].type);
+      sessionStorage.setItem('useOpenRouter', apiKeys[index].useOpenRouter ? 'true' : 'false');
     } catch (error) {
       console.error('Error selecting API key:', error);
     }
@@ -209,8 +224,8 @@ const APIKeyManager: React.FC = () => {
         onClose={() => setIsPopupOpen(false)}
         onAddKey={addKey}
       />
-    </div>
+      </div>
   );
 };
 
-export default APIKeyManager;
+    export default APIKeyManager;
