@@ -72,7 +72,7 @@ export async function fetchAPIResponse(apiKey: { type: string; key: string }, sy
         lastMessage.content += "\n\nRemember to ALWAYS show FULL files when making modifications. No need to apologize.";
       } else if (Array.isArray(lastMessage.content)) {
         const lastContentItem = lastMessage.content[lastMessage.content.length - 1];
-        if (lastContentItem.type === 'text') {
+        if (lastContent.type === 'text') {
           lastContentItem.text += "\n\nRemember to ALWAYS show FULL files when making modifications. No need to apologize.";
         } else {
           lastMessage.content.push({ type: 'text', text: "\n\nRemember to ALWAYS show FULL files when making modifications. No need to apologize." });
@@ -114,6 +114,12 @@ export async function fetchAPIResponse(apiKey: { type: string; key: string }, sy
   } else {
     throw new Error('Unsupported API type');
   }
+
+  // Debug output
+  console.log('API Key Type:', apiKey.type);
+  console.log('Use OpenRouter:', useOpenRouter);
+  console.log('API URL:', (apiKey.type === 'Claude' && useOpenRouter !== 'true') ? CLAUDE_API_URL : (useOpenRouter === 'true' ? OPENROUTER_API_URL : OPENAI_API_URL));
+  console.log('Request Body Model:', body.model);
 
   await logAPIRequest(projectDir, apiKey.type, body);
 
